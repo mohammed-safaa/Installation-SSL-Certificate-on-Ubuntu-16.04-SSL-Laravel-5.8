@@ -1,0 +1,106 @@
+Installation SSL Certificate on Ubuntu/Linuxmint/Debian to Secure Apache
+
+
+sudo nano /var/www/html/laravel/.env 
+----------------------------------------------------------------------
+APP_URL=https://localhost  
+
+-----------------------------------------------------------------------
+sudo nano /var/www/html/laravel/public/.htaccess
+-----------------------------------------------------------------------
+<IfModule mod_rewrite.c>                                                                                                                      
+    <IfModule mod_negotiation.c>                                                                                                              
+        Options -MultiViews -Indexes                                                                                                          
+    </IfModule>                                                                                                                               
+                                                                                                                                              
+    RewriteEngine On                                                                                                                          
+                                                                                                                                              
+    # Handle Authorization Header                                                                                                             
+    RewriteCond %{HTTP:Authorization} .                                                                                                       
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]                                                                             
+                                                                                                                                              
+    # Redirect Trailing Slashes If Not A Folder...                                                                                            
+    RewriteCond %{REQUEST_FILENAME} !-d                                                                                                       
+    RewriteCond %{REQUEST_URI} (.+)/$                                                                                                         
+    RewriteRule ^ %1 [L,R=301]                                                                                                                
+                                                                                                                                              
+    # Handle Front Controller...                                                                                                              
+    RewriteCond %{REQUEST_FILENAME} !-d                                                                                                       
+    RewriteCond %{REQUEST_FILENAME} !-f                                                                                                       
+    RewriteRule ^ index.php [L]                                                                                                               
+                                                                                                                                              
+    # Http to >> Https         
+    RewriteEngine On                                                 
+    RewriteCond %{HTTPS} !=on 
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]  
+                                                                                                                                   
+</IfModule>   
+
+---------------------------------------------------------------------------
+
+sudo a2enmod ssl 
+sudo service apache2 restart
+
+
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/apache.key -out /etc/ssl/apache.crt
+
+Country Name (2 letter code) \[AU\]:iq
+State or Province Name (full name) \[Some-State\]: mohammed alzobaie
+Locality Name (eg, city) \[\]:kirkuk
+Organization Name (eg, company) \[Internet Widgits Pty Ltd\]:laravelssl
+Organizational Unit Name (eg, section) \[\]:laravelssl
+Common Name (e.g. server FQDN or YOUR name) \[\]: 192.168.1.111
+Email Address \[\]:laravel@admin.com
+
+-----------------------------------------------------------------------------
+sudo nano /etc/apache2/sites-available/default-ssl.conf
+-----------------------------------------------------------------------------
+                                                                                                                                              
+<IfModule mod_ssl.c>                                                                                                                          
+
+ <VirtualHost _default_:443>                                                                                                             
+    ServerName http://192.168.1.111                                                                                                           
+    ServerAlias 192.168.1.111                                                                                                                 
+                                  
+     DocumentRoot /var/www/html/laravel/public                                                                                                  
+                                                                                                                                              
+    SSLEngine On                                                                                                                              
+    SSLCertificateFile /etc/ssl/apache.crt                                                                                                    
+    SSLCertificateKeyFile /etc/ssl/apache.key                                                                                                 
+                                                                                                                                              
+    <Directory /var/www/html/laravel/public>                                                                                                  
+                                                                                                                                              
+        Options Indexes FollowSymLinks                                                                                                        
+        AllowOverride All                                                                                                                     
+        Order allow,deny                                                                                                                      
+        allow from all                                                                                                                        
+    </Directory>                                                                                                                              
+ </VirtualHost>      
+ 
+ </IfModule>      
+ 
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet     
+
+ -----------------------------------------------------------------------------------                                                                                                                                       
+
+cd /etc/apache2/sites-available/
+
+
+sudo a2ensite default-ssl.conf
+sudo systemctl reload apache2
+
+sudo apachectl configtest
+or
+sudo apache2ctl configtest
+
+
+ 
+sudo systemctl restart apache2.service
+
+sudo service apache2 restart
+
+
+
+Congratulations 
+dane :)
